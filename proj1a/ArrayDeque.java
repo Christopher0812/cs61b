@@ -1,6 +1,5 @@
-import javax.lang.model.type.MirroredTypeException;
 
-public class ArrayDeque<T> implements Deque<T> {
+public class ArrayDeque<T> {
     private T[] items;
     private int head;
     private int tail;
@@ -16,7 +15,7 @@ public class ArrayDeque<T> implements Deque<T> {
     public void resize() {
         T[] temp = (T[]) new Object[items.length * 2];
         for (int i = 0; i < size; i++) {
-            temp[i + 1] =  get(i);
+            temp[i + 1] = get(i);
         }
         items = temp;
 
@@ -32,7 +31,6 @@ public class ArrayDeque<T> implements Deque<T> {
         tail = tail % items.length;
     }
 
-    @Override
     public void addFirst(T item) {
         flushPointers();
 
@@ -45,7 +43,6 @@ public class ArrayDeque<T> implements Deque<T> {
         size++;
     }
 
-    @Override
     public void addLast(T item) {
         flushPointers();
 
@@ -58,7 +55,6 @@ public class ArrayDeque<T> implements Deque<T> {
         size++;
     }
 
-    @Override
     public T removeFirst() {
         if (isEmpty()) {
             return null;
@@ -74,7 +70,6 @@ public class ArrayDeque<T> implements Deque<T> {
         }
     }
 
-    @Override
     public T removeLast() {
         if (isEmpty()) {
             return null;
@@ -90,7 +85,6 @@ public class ArrayDeque<T> implements Deque<T> {
         }
     }
 
-    @Override
     public void printDeque() {
         flushPointers();
 
@@ -106,17 +100,14 @@ public class ArrayDeque<T> implements Deque<T> {
         System.out.println(str);
     }
 
-    @Override
     public boolean isEmpty() {
         return size == 0;
     }
 
-    @Override
     public int size() {
         return size;
     }
 
-    @Override
     public T get(int index) {
         int pos = (head + index + 1) % items.length;
         return items[pos];
