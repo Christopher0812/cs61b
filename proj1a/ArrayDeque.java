@@ -35,7 +35,7 @@ public class ArrayDeque<T> {
         if (head < 0) {
             head += items.length;
         }
-        if (tail < -1) {
+        if (tail < 0) {
             tail += items.length;
         }
 
