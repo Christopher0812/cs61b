@@ -1,5 +1,13 @@
+/**
+ * A deque based on linked list.
+ * @param <T>
+ * @author Filtee
+ */
 
 public class LinkedListDeque<T> {
+    /**
+     * The linked list node class, which is looped.
+     */
     private class StuffNode {
         private T item;
         private StuffNode prev;
@@ -12,7 +20,7 @@ public class LinkedListDeque<T> {
         }
     }
 
-    private StuffNode headNode;
+    private final StuffNode headNode;
     private int size;
 
     public LinkedListDeque() {

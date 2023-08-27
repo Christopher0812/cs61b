@@ -1,3 +1,8 @@
+/**
+ * A deque based on array.
+ * @param <T>
+ * @author Filtee
+ */
 
 public class ArrayDeque<T> {
     private T[] items;
