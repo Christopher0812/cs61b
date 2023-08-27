@@ -12,8 +12,12 @@ public class ArrayDeque<T> {
         size = 0;
     }
 
-    private void resize() {
-        T[] temp = (T[]) new Object[items.length * 2];
+    /**
+     * Resize the array when the array is full, or the size is way less than the array length.
+     * @param capacity The new length of the new length of the array.
+     */
+    private void resize(int capacity) {
+        T[] temp = (T[]) new Object[capacity];
         for (int i = 0; i < size; i++) {
             temp[i + 1] = get(i);
         }
@@ -23,15 +27,19 @@ public class ArrayDeque<T> {
         tail = size + 1;
     }
 
+    /**
+     * Redirect the pointers in case they go out of bound.
+     */
     private void flushPointers() {
-        if (head == -1) {
-            head = items.length - 1;
+        /* When the pointer index is less than 0. */
+        if (head < 0) {
+            head += items.length;
+        }
+        if (tail < -1) {
+            tail += items.length;
         }
 
-        if (tail == -1) {
-            tail = items.length - 1;
-        }
-
+        /* When the pointer index is more than the length of the array. */
         head = head % items.length;
         tail = tail % items.length;
     }
@@ -39,10 +47,12 @@ public class ArrayDeque<T> {
     public void addFirst(T item) {
         flushPointers();
 
+        /* If the array is full, resize it to be bigger. */
         if (head == tail) {
-            resize();
+            resize(items.length * 2);
         }
 
+        /* Store the new item. */
         items[head] = item;
         head--;
         size++;
@@ -51,10 +61,12 @@ public class ArrayDeque<T> {
     public void addLast(T item) {
         flushPointers();
 
+        /* If the array is full, resize it to be bigger. */
         if (head == tail) {
-            resize();
+            resize(items.length * 2);
         }
 
+        /* Store the new item. */
         items[tail] = item;
         tail++;
         size++;
@@ -64,13 +76,18 @@ public class ArrayDeque<T> {
         if (isEmpty()) {
             return null;
         } else {
-            flushPointers();
+            /* Remove the item. */
             head++;
             size--;
             flushPointers();
 
             T ret = items[head];
             items[head] = null;
+
+            /* Checkout if the array needs to be resized. */
+            if (size <= items.length / 2) {
+                resize(items.length / 2 + 1);
+            }
             return ret;
         }
     }
@@ -79,13 +96,18 @@ public class ArrayDeque<T> {
         if (isEmpty()) {
             return null;
         } else {
-            flushPointers();
+            /* Remove the item. */
             tail--;
             size--;
             flushPointers();
 
             T ret = items[tail];
             items[tail] = null;
+
+            /* Checkout if the array needs to be resized. */
+            if (size <= items.length / 2) {
+                resize(items.length / 2 + 1);
+            }
             return ret;
         }
     }

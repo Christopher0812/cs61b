@@ -2,8 +2,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import java.util.Optional;
-
 public class ArrayDequeTest {
     @Test
     public void addRemoveTest() {
@@ -35,6 +33,6 @@ public class ArrayDequeTest {
         assertEquals("1", deque2Test.get(1));
         assertEquals("2", deque2Test.get(2));
         assertEquals("3", deque2Test.get(3));
-        assertEquals("4",deque2Test.get(4));
+        assertEquals("4", deque2Test.get(4));
     }
 }
