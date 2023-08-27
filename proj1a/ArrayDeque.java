@@ -12,7 +12,7 @@ public class ArrayDeque<T> {
         size = 0;
     }
 
-    public void resize() {
+    private void resize() {
         T[] temp = (T[]) new Object[items.length * 2];
         for (int i = 0; i < size; i++) {
             temp[i + 1] = get(i);
@@ -23,11 +23,16 @@ public class ArrayDeque<T> {
         tail = size + 1;
     }
 
-    public void flushPointers() {
+    private void flushPointers() {
         if (head == -1) {
             head = items.length - 1;
         }
 
+        if (tail == -1) {
+            tail = items.length - 1;
+        }
+
+        head = head % items.length;
         tail = tail % items.length;
     }
 
