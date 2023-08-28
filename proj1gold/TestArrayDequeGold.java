@@ -21,35 +21,34 @@ public class TestArrayDequeGold {
 
             switch (caseOfMethods) {
                 /* { addFirst } case */
-                case 0 -> {
-                    message += "addFirst(%d)\n".formatted(randomNum);
+                case 0:
+                    message += "addFirst(" + randomNum + ")\n";
                     studentDeque.addFirst(randomNum);
                     solutionDeque.addFirst(randomNum);
-                }
+                    break;
                 /* { addLast } case */
-                case 1 -> {
-                    message += "addLast(%d)\n".formatted(randomNum);
+                case 1:
+                    message += "addLast(" + randomNum + ")\n";
                     studentDeque.addLast(randomNum);
                     solutionDeque.addLast(randomNum);
-                }
+                    break;
                 /* { removeFirst } case */
-                case 2 -> {
+                case 2:
                     if (!studentDeque.isEmpty() && !solutionDeque.isEmpty()) {
                         message += "removeFirst()\n";
                         stdRm = studentDeque.removeFirst();
                         solRm = solutionDeque.removeFirst();
+                        break;
                     }
-                }
-                /* { removeLast } case */
-                case 3 -> {
+                    /* { removeLast } case */
+                case 3:
                     if (!studentDeque.isEmpty() && !solutionDeque.isEmpty()) {
                         message += "removeLast()\n";
                         stdRm = studentDeque.removeLast();
                         solRm = solutionDeque.removeLast();
                     }
-                }
-                default -> {
-                }
+                    break;
+                default:
             }
 
             /* Check out whether the */
