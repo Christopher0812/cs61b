@@ -67,7 +67,7 @@ public class Palindrome {
      * @param cc          { CharacterComparator } passed in as argument.
      * @return true, if the given word is a palindrome that meets the rules of cc.
      */
-    public boolean isPalindrome(Deque<Character> dequeOfWord, CharacterComparator cc) {
+    private boolean isPalindrome(Deque<Character> dequeOfWord, CharacterComparator cc) {
         if (dequeOfWord.size() == 0 || dequeOfWord.size() == 1) {
             /* If there are only 0 or 1 character left, return true. */
             return true;
