@@ -14,7 +14,6 @@ public class StudentArrayDequeLauncher {
                 sad1.addFirst(i);
             }
         }
-
         sad1.printDeque();
     }
 } 
