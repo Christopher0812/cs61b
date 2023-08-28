@@ -22,15 +22,13 @@ public class TestArrayDequeGold {
             switch (caseOfMethods) {
                 /* { addFirst } case */
                 case 0 -> {
-                    message += "addFirst(%d)\n"
-                            .formatted(randomNum);
+                    message += "addFirst(%d)\n".formatted(randomNum);
                     studentDeque.addFirst(randomNum);
                     solutionDeque.addFirst(randomNum);
                 }
                 /* { addLast } case */
                 case 1 -> {
-                    message += "addLast(%d)\n"
-                            .formatted(randomNum);
+                    message += "addLast(%d)\n".formatted(randomNum);
                     studentDeque.addLast(randomNum);
                     solutionDeque.addLast(randomNum);
                 }
@@ -49,6 +47,8 @@ public class TestArrayDequeGold {
                         stdRm = studentDeque.removeLast();
                         solRm = solutionDeque.removeLast();
                     }
+                }
+                default -> {
                 }
             }
 
