@@ -1,7 +1,5 @@
 package synthesizer;
 
-import java.util.Random;
-
 // Make sure this class is public
 public class GuitarString {
     /**
