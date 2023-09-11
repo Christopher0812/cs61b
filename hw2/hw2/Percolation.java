@@ -23,17 +23,18 @@ public class Percolation {
         this.N = N;
         head = N * N;
         tail = new int[N];
-        square = new WeightedQuickUnionUF(N * N  + N + 1);
+        square = new WeightedQuickUnionUF(N * N + N + 1);
         map = new boolean[N][N];
 
         for (int i = 0; i < N; i++) {
-            square.union(head, i);
             tail[i] = N * N + i + 1;
             square.union(tail[i], N * (N - 1) + i);
         }
     }
 
-    /** Connect the newly opened space to the nearby blocks. */
+    /**
+     * Connect the newly opened space to the nearby blocks.
+     */
     private void connectNearby(int row, int col) {
         if (isOpen(row - 1, col)) {
             square.union(xyTo1D(row - 1, col), xyTo1D(row, col));
@@ -54,6 +55,9 @@ public class Percolation {
      */
     public void open(int row, int col) {
         map[row][col] = true;
+        if (row == 0) {
+            square.union(head, xyTo1D(row, col));
+        }
         openCount++;
         connectNearby(row, col);
     }
@@ -69,7 +73,9 @@ public class Percolation {
         }
     }
 
-    /** Translate 2D position into 1D integers. */
+    /**
+     * Translate 2D position into 1D integers.
+     */
     private int xyTo1D(int row, int col) {
         return row * N + col;
     }
@@ -114,8 +120,8 @@ public class Percolation {
             p.open(i, 2);
         }
 
-        p.open(4,4);
-        p.open(3,4);
+        p.open(4, 4);
+        p.open(3, 4);
 
         if (p.percolates() && !p.isFull(4, 4)) {
             System.out.println("a");
