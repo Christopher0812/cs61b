@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- *  A hash table-backed Map implementation. Provides amortized constant time
- *  access to elements via get(), remove(), and put() in the best case.
+ * A hash table-backed Map implementation. Provides amortized constant time
+ * access to elements via get(), remove(), and put() in the best case.
  *
- *  @author Your name here
+ * @author Your name here
  */
 public class MyHashMap<K, V> implements Map61B<K, V> {
 
@@ -35,9 +35,10 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         }
     }
 
-    /** Computes the hash function of the given key. Consists of
-     *  computing the hashcode, followed by modding by the number of buckets.
-     *  To handle negative numbers properly, uses floorMod instead of %.
+    /**
+     * Computes the hash function of the given key. Consists of
+     * computing the hashcode, followed by modding by the number of buckets.
+     * To handle negative numbers properly, uses floorMod instead of %.
      */
     private int hash(K key) {
         if (key == null) {
@@ -53,19 +54,48 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      */
     @Override
     public V get(K key) {
-        throw new UnsupportedOperationException();
+        return buckets[hash(key)].get(key);
+    }
+
+    private void putResizer(int newSize) {
+        /* Redirect {buckets} to the newly created buckets. */
+        ArrayMap<K, V>[] oldBuckets = buckets;
+        buckets = new ArrayMap[newSize];
+        clear();
+
+        /* Get each bucket out of the old buckets set. */
+        for (ArrayMap<K, V> oldBucket : oldBuckets) {
+            /* Get the key iterator of each bucket. */
+            Iterator<K> keyIter = oldBucket.iterator();
+            for (Iterator<K> it = keyIter; it.hasNext(); ) {
+                K key = it.next();
+                /* Put each pair in the old buckets into the newly created ones. */
+                put(key, oldBucket.get(key));
+            }
+        }
     }
 
     /* Associates the specified value with the specified key in this map. */
     @Override
     public void put(K key, V value) {
-        throw new UnsupportedOperationException();
+        /* Check out if the load factor exceeds {MAX_LF}. */
+        if ((double) size / buckets.length > MAX_LF) {
+            putResizer(buckets.length * 2);
+        }
+
+        int hashCode = hash(key);
+        if (buckets[hashCode].get(key) == null) {
+            buckets[hashCode].put(key, value);
+            size++;
+        } else {
+            buckets[hashCode].put(key, value);
+        }
     }
 
     /* Returns the number of key-value mappings in this map. */
     @Override
     public int size() {
-        throw new UnsupportedOperationException();
+        return size;
     }
 
     //////////////// EVERYTHING BELOW THIS LINE IS OPTIONAL ////////////////
