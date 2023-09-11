@@ -54,12 +54,14 @@ public class Percolation {
      * Open the site (row, col) if it is not open already.
      */
     public void open(int row, int col) {
-        map[row][col] = true;
-        if (row == 0) {
-            square.union(head, xyTo1D(row, col));
+        if (!isOpen(row, col)) {
+            map[row][col] = true;
+            if (row == 0) {
+                square.union(head, xyTo1D(row, col));
+            }
+            openCount++;
+            connectNearby(row, col);
         }
-        openCount++;
-        connectNearby(row, col);
     }
 
     /**
