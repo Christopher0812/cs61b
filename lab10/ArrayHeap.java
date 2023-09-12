@@ -183,16 +183,23 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     @Override
     public T removeMin() {
-        T smallest = peek();
-        /* Swap the last item into the root position. */
-        swap(1, size);
-        /* Remove the right-most leaf node*/
-        contents[size] = null;
-        size--;
-        /* Sink the root. */
-        sink(1);
+        if (size > 0) {
+            T smallest = peek();
 
-        return smallest;
+            /* Swap the last item into the root position. */
+            swap(1, size);
+            /* Remove the right-most leaf node*/
+            contents[size] = null;
+            size--;
+            /* Sink the root. */
+            if (size != 0) {
+                sink(1);
+            }
+            return smallest;
+
+        } else {
+            return null;
+        }
     }
 
     /**
