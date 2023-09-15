@@ -128,11 +128,15 @@ public class Board implements WorldState {
     }
 
     public boolean equals(Object y) {
+        if (y == null) {
+            return false;
+        }
+
         if (y == this) {
             return true;
         }
 
-        if (y == null || y.getClass() != Board.class) {
+        if (y.getClass() != Board.class || ((Board) y).tiles.length != N) {
             return false;
         }
 

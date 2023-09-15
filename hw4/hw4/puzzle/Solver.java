@@ -26,6 +26,7 @@ public class Solver {
             return totalEstimate - o.totalEstimate;
         }
     }
+
     private final MinPQ<SearchNode> priorityQueue;
 
     private SearchNode goalNode;
@@ -53,7 +54,8 @@ public class Solver {
         /* Get the iterator of the neighbors of the newly removed search node.
          * For each neighbor of X’s world state, create a new search node and insert it. */
         for (WorldState eachState : nodeRemoved.worldState.neighbors()) {
-            if (nodeRemoved.previous == null || !eachState.equals(nodeRemoved.previous.worldState)) {
+            if (nodeRemoved.previous == null ||
+                    !eachState.equals(nodeRemoved.previous.worldState)) {
                 SearchNode eachNode = new SearchNode(eachState, nodeRemoved.moves + 1, nodeRemoved);
                 priorityQueue.insert(eachNode);
             }
@@ -81,5 +83,10 @@ public class Solver {
         solutionHelper(goalNode);
 
         return worldStates;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
