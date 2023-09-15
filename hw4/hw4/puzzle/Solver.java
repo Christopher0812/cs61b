@@ -3,34 +3,35 @@ package hw4.puzzle;
 import edu.princeton.cs.algs4.MinPQ;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class Solver {
 
-    class SearchNode implements Comparable<SearchNode>{
-        private WorldState worldState;
-        private int moves;
-        private SearchNode previous;
+    class SearchNode implements Comparable<SearchNode> {
+        private final WorldState worldState;
+        private final int moves;
+        private final SearchNode previous;
+        private final int totalEstimate;
 
         private SearchNode(WorldState worldState, int moves, SearchNode previous) {
             this.worldState = worldState;
             this.moves = moves;
             this.previous = previous;
+
+            totalEstimate = worldState.estimatedDistanceToGoal() + moves;
         }
 
         @Override
         public int compareTo(SearchNode o) {
-            int thisTotal = this.worldState.estimatedDistanceToGoal() + this.moves;
-            int otherTotal = o.worldState.estimatedDistanceToGoal() + o.moves;
-            return thisTotal - otherTotal;
+            return totalEstimate - o.totalEstimate;
         }
     }
 
-    private MinPQ<SearchNode> priorityQueue;
+    public int numOfAddedPQ = 0;
+
+    private final MinPQ<SearchNode> priorityQueue;
 
     private SearchNode goalNode;
-
     List<WorldState> worldStates;
 
     public Solver(WorldState initial) {
@@ -53,11 +54,12 @@ public class Solver {
         }
 
         /* Get the iterator of the neighbors of the newly removed search node.
-        * For each neighbor of X’s world state, create a new search node and insert it. */
+         * For each neighbor of X’s world state, create a new search node and insert it. */
         for (WorldState eachState : nodeRemoved.worldState.neighbors()) {
             if (nodeRemoved.previous == null || !eachState.equals(nodeRemoved.previous.worldState)) {
                 SearchNode eachNode = new SearchNode(eachState, nodeRemoved.moves + 1, nodeRemoved);
                 priorityQueue.insert(eachNode);
+                numOfAddedPQ++;
             }
         }
         /* Repeat the whole process. */
