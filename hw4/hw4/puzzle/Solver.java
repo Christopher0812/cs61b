@@ -52,7 +52,8 @@ public class Solver {
             for (WorldState eachState : nodeRemoved.worldState.neighbors()) {
                 if (nodeRemoved.previous == null
                         || !eachState.equals(nodeRemoved.previous.worldState)) {
-                    SearchNode eachNode = new SearchNode(eachState, nodeRemoved.moves + 1, nodeRemoved);
+                    SearchNode eachNode =
+                            new SearchNode(eachState, nodeRemoved.moves + 1, nodeRemoved);
                     priorityQueue.insert(eachNode);
                 }
             }
