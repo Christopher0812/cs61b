@@ -7,6 +7,7 @@ public class Board implements WorldState {
     private final int[][] tiles;
 
     private final int N;
+    private final int BLANK = 0;
 
     private int estimatedDistance;
 
@@ -44,7 +45,6 @@ public class Board implements WorldState {
         int hug = N;
         int bug = -1;
         int zug = -1;
-        int BLANK = 0;
         for (int rug = 0; rug < hug; rug++) {
             for (int tug = 0; tug < hug; tug++) {
                 if (tileAt(rug, tug) == BLANK) {
@@ -75,12 +75,12 @@ public class Board implements WorldState {
     }
 
     private int[] goalPos(int value) {
-        int[] row_col = new int[2];
+        int[] rowCol = new int[2];
 
-        row_col[0] = (value - 1) / N;
-        row_col[1] = (value - 1) % N;
+        rowCol[0] = (value - 1) / N;
+        rowCol[1] = (value - 1) % N;
 
-        return row_col;
+        return rowCol;
     }
 
     /* Hamming estimate. */
@@ -89,8 +89,8 @@ public class Board implements WorldState {
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                int[] row_col = goalPos(tileAt(i, j));
-                if (row_col[0] != i || row_col[1] != j) {
+                int[] rowCol = goalPos(tileAt(i, j));
+                if (rowCol[0] != i || rowCol[1] != j) {
                     notGoal++;
                 }
             }
@@ -108,8 +108,8 @@ public class Board implements WorldState {
                 if (tileAt(i, j) == 0) {
                     continue;
                 }
-                int[] row_col = goalPos(tileAt(i, j));
-                totalDist += (Math.abs(row_col[0] - i) + Math.abs(row_col[1] - j));
+                int[] rowCol = goalPos(tileAt(i, j));
+                totalDist += (Math.abs(rowCol[0] - i) + Math.abs(rowCol[1] - j));
             }
         }
 

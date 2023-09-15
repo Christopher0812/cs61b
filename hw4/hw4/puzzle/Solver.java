@@ -26,9 +26,6 @@ public class Solver {
             return totalEstimate - o.totalEstimate;
         }
     }
-
-    public int numOfAddedPQ = 0;
-
     private final MinPQ<SearchNode> priorityQueue;
 
     private SearchNode goalNode;
@@ -59,7 +56,6 @@ public class Solver {
             if (nodeRemoved.previous == null || !eachState.equals(nodeRemoved.previous.worldState)) {
                 SearchNode eachNode = new SearchNode(eachState, nodeRemoved.moves + 1, nodeRemoved);
                 priorityQueue.insert(eachNode);
-                numOfAddedPQ++;
             }
         }
         /* Repeat the whole process. */
