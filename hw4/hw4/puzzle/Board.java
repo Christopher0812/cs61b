@@ -89,6 +89,9 @@ public class Board implements WorldState {
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
+                if (tileAt(i, j) == 0) {
+                    continue;
+                }
                 int[] rowCol = goalPos(tileAt(i, j));
                 if (rowCol[0] != i || rowCol[1] != j) {
                     notGoal++;
