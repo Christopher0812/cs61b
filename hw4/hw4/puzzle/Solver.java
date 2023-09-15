@@ -30,7 +30,7 @@ public class Solver {
     private final MinPQ<SearchNode> priorityQueue;
 
     private SearchNode goalNode;
-    List<WorldState> worldStates;
+    private List<WorldState> worldStates;
 
     public Solver(WorldState initial) {
         /* Create a priority queue of search nodes. */
@@ -46,22 +46,23 @@ public class Solver {
         SearchNode nodeRemoved = priorityQueue.delMin();
 
         /* If the node removed is the goal, return. */
-        if (nodeRemoved.worldState.isGoal()) {
-            goalNode = nodeRemoved;
-            return;
+        while (!nodeRemoved.worldState.isGoal()) {
+            /* Get the iterator of the neighbors of the newly removed search node.
+             * For each neighbor of X’s world state, create a new search node and insert it. */
+            for (WorldState eachState : nodeRemoved.worldState.neighbors()) {
+                if (nodeRemoved.previous == null
+                        || !eachState.equals(nodeRemoved.previous.worldState)) {
+                    SearchNode eachNode = new SearchNode(eachState, nodeRemoved.moves + 1, nodeRemoved);
+                    priorityQueue.insert(eachNode);
+                }
+            }
+
+            /* Remove the next node. */
+            nodeRemoved = priorityQueue.delMin();
         }
 
-        /* Get the iterator of the neighbors of the newly removed search node.
-         * For each neighbor of X’s world state, create a new search node and insert it. */
-        for (WorldState eachState : nodeRemoved.worldState.neighbors()) {
-            if (nodeRemoved.previous == null ||
-                    !eachState.equals(nodeRemoved.previous.worldState)) {
-                SearchNode eachNode = new SearchNode(eachState, nodeRemoved.moves + 1, nodeRemoved);
-                priorityQueue.insert(eachNode);
-            }
-        }
-        /* Repeat the whole process. */
-        proceedAlgorithm();
+        /* Reach the goal node. */
+        goalNode = nodeRemoved;
     }
 
     public int moves() {
@@ -83,10 +84,5 @@ public class Solver {
         solutionHelper(goalNode);
 
         return worldStates;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 }
