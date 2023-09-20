@@ -8,18 +8,17 @@ import java.util.Map;
  * not draw the output correctly.
  */
 public class Rasterer {
-    private final int maxDepth = 7;
     private Map<String, Double> params;
     private double lonDPP;
     private int depth;
     private double tileLon;
     private double tileLat;
-    private double raster_ul_lon;
-    private double raster_ul_lat;
-    private double raster_lr_lon;
-    private double raster_lr_lat;
-    private String[][] render_grid;
-    boolean query_success;
+    private double rasterUlLon;
+    private double rasterUlLat;
+    private double rasterLrLon;
+    private double rasterLrLat;
+    private String[][] renderGrid;
+    boolean querySuccess;
 
 
     public Rasterer() {
@@ -57,16 +56,19 @@ public class Rasterer {
         System.out.println(params);
         this.params = params;
 
+        /* Using the helper method to prepare for all the results. */
         getMapRaster();
-        Map<String, Object> results = new HashMap<>();
 
-        results.put("render_grid", render_grid);
-        results.put("raster_ul_lon", raster_ul_lon);
-        results.put("raster_ul_lat", raster_ul_lat);
-        results.put("raster_lr_lon", raster_lr_lon);
-        results.put("raster_lr_lat", raster_lr_lat);
+        /* Create the result map to be returned. */
+        Map<String, Object> results = new HashMap<>();
+        /* Put all the results into the map. */
+        results.put("render_grid", renderGrid);
+        results.put("raster_ul_lon", rasterUlLon);
+        results.put("raster_ul_lat", rasterUlLat);
+        results.put("raster_lr_lon", rasterLrLon);
+        results.put("raster_lr_lat", rasterLrLat);
         results.put("depth", depth);
-        results.put("query_success", query_success);
+        results.put("query_success", querySuccess);
 
         return results;
     }
@@ -76,8 +78,8 @@ public class Rasterer {
      */
     private void getMapRaster() {
         checkSuccess();
-
-        if (query_success) {
+        /* If the given data query box can be rastered, set up all the results. */
+        if (querySuccess) {
             setLonDPP();
             setDepth();
             setLonPos();
@@ -98,13 +100,14 @@ public class Rasterer {
                 MapServer.ROOT_ULLON <= ullon && ullon < lrlon && lrlon <= MapServer.ROOT_LRLON;
         boolean latSuccess =
                 MapServer.ROOT_ULLAT >= ullat && ullat > lrlat && lrlat >= MapServer.ROOT_LRLAT;
-        query_success = lonSuccess & latSuccess;
+        querySuccess = lonSuccess & latSuccess;
     }
 
     /**
      * Set the LonDpp according to the input params.
      */
     private void setLonDPP() {
+        /* Get lonDpp, by (lr_longitude - ul_longitude) / (width_of_image_box)*/
         lonDPP = (params.get("lrlon") - params.get("ullon")) / params.get("w");
     }
 
@@ -119,7 +122,8 @@ public class Rasterer {
         double tempDPP;
         int tempDepth = 0;
 
-        while (tempDepth <= maxDepth) {
+        /* Get the right depth that leads to the right lonDPP. */
+        while (tempDepth <= 7) {
             tempDPP = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (Math.pow(2, tempDepth) * MapServer.TILE_SIZE);
 
             if (tempDPP < lonDPP) {
@@ -136,35 +140,36 @@ public class Rasterer {
     /**
      * Set the raster positions:
      * 1. upper left longitude
-     * 2. upper left latitude
-     * 3. lower right longitude
+     * 2. lower right longitude
+     * 3. upper left latitude
      * 4. lower right latitudes
      */
     private void setLonPos() {
+        /* Set {raster_UlLon}*/
         for (int i = 0; i < Math.pow(2, depth); i++) {
             if (tileLon * i + MapServer.ROOT_ULLON > params.get("ullon")) {
-                raster_ul_lon = MapServer.ROOT_ULLON + (i - 1) * tileLon;
+                rasterUlLon = MapServer.ROOT_ULLON + (i - 1) * tileLon;
                 break;
             }
         }
 
         for (int i = 0; i < Math.pow(2, depth); i++) {
             if (tileLon * i + MapServer.ROOT_ULLON > params.get("lrlon")) {
-                raster_lr_lon = MapServer.ROOT_ULLON + i * tileLon;
+                rasterLrLon = MapServer.ROOT_ULLON + i * tileLon;
                 break;
             }
         }
 
         for (int i = 0; i < Math.pow(2, depth); i++) {
             if (MapServer.ROOT_ULLAT - tileLat * i < params.get("ullat")) {
-                raster_ul_lat = MapServer.ROOT_ULLAT - (i - 1) * tileLat;
+                rasterUlLat = MapServer.ROOT_ULLAT - (i - 1) * tileLat;
                 break;
             }
         }
 
         for (int i = 0; i < Math.pow(2, depth); i++) {
             if (MapServer.ROOT_ULLAT - tileLat * i < params.get("lrlat")) {
-                raster_lr_lat = MapServer.ROOT_ULLAT - i * tileLat;
+                rasterLrLat = MapServer.ROOT_ULLAT - i * tileLat;
                 break;
             }
         }
@@ -174,12 +179,12 @@ public class Rasterer {
      * Set the whole render grid to be returned.
      */
     private void setRenderGrid() {
-        int xx = (int) Math.round((raster_lr_lon - raster_ul_lon) / tileLon);
-        int yy = (int) Math.round((raster_ul_lat - raster_lr_lat) / tileLat);
-        int lonS = (int) Math.round((raster_ul_lon - MapServer.ROOT_ULLON) / tileLon);
-        int latS = (int) Math.round((MapServer.ROOT_ULLAT - raster_ul_lat) / tileLat);
+        int xx = (int) Math.round((rasterLrLon - rasterUlLon) / tileLon);
+        int yy = (int) Math.round((rasterUlLat - rasterLrLat) / tileLat);
+        int lonS = (int) Math.round((rasterUlLon - MapServer.ROOT_ULLON) / tileLon);
+        int latS = (int) Math.round((MapServer.ROOT_ULLAT - rasterUlLat) / tileLat);
 
-        render_grid = new String[yy][xx];
+        renderGrid = new String[yy][xx];
 
         String depthStr = "d" + depth + "_";
         for (int i = 0; i < yy; i++) {
@@ -187,7 +192,7 @@ public class Rasterer {
 
             for (int j = 0; j < xx; j++) {
                 String xxStr = "x" + (lonS + j) + "_";
-                render_grid[i][j] = depthStr + xxStr + yyStr + ".png";
+                renderGrid[i][j] = depthStr + xxStr + yyStr + ".png";
             }
         }
     }
