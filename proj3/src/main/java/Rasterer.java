@@ -12,7 +12,8 @@ public class Rasterer {
     private Map<String, Double> params;
     private double lonDPP;
     private int depth;
-    private double tileLength;
+    private double tileLon;
+    private double tileLat;
     private double raster_ul_lon;
     private double raster_ul_lat;
     private double raster_lr_lon;
@@ -79,7 +80,7 @@ public class Rasterer {
         if (query_success) {
             setLonDPP();
             setDepth();
-            setRasterPos();
+            setLonPos();
             setRenderGrid();
         }
     }
@@ -104,40 +105,32 @@ public class Rasterer {
      * Set the LonDpp according to the input params.
      */
     private void setLonDPP() {
-        lonDPP = (params.get("lrlon") - params.get("ullon")) / 1085;
+        lonDPP = (params.get("lrlon") - params.get("ullon")) / params.get("w");
     }
 
     /**
      * Set Depth of the whole raster process.
      */
     private void setDepth() {
+        /* Init {depth} to 7 first as the upper bound,
+         * in case the process go beyond this depth. */
+        depth = 7;
+
         double tempDPP;
         int tempDepth = 0;
 
         while (tempDepth <= maxDepth) {
-            tempDPP = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / Math.pow(2, tempDepth) / MapServer.TILE_SIZE;
+            tempDPP = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (Math.pow(2, tempDepth) * MapServer.TILE_SIZE);
 
-            if (tempDPP > lonDPP) {
-                depth = tempDepth + 1;
-                tileLength = (double) MapServer.TILE_SIZE / maxDepth;
-                return;
+            if (tempDPP < lonDPP) {
+                depth = tempDepth;
+                break;
             }
-
             tempDepth++;
         }
-    }
 
-    /**
-     * {setRasterPos()} helper function.
-     */
-    private double setRasterPos(double pos, double queryPos) {
-        int count = 0;
-        for (int i = 0; i < Math.pow(2, depth); i++) {
-            if (tileLength * i + pos > queryPos) {
-                count = i - 1;
-            }
-        }
-        return pos + tileLength * count;
+        tileLon = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / Math.pow(2, depth);
+        tileLat = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / Math.pow(2, depth);
     }
 
     /**
@@ -145,34 +138,56 @@ public class Rasterer {
      * 1. upper left longitude
      * 2. upper left latitude
      * 3. lower right longitude
-     * 4. lower right latitude
+     * 4. lower right latitudes
      */
-    private void setRasterPos() {
-        raster_ul_lon = setRasterPos(MapServer.ROOT_ULLON, params.get("ullon"));
-        raster_ul_lat = setRasterPos(MapServer.ROOT_ULLAT, params.get("urlat"));
-        raster_lr_lon = setRasterPos(MapServer.ROOT_LRLON, params.get("lrlon"));
-        raster_lr_lat = setRasterPos(MapServer.ROOT_LRLAT, params.get("lrlat"));
+    private void setLonPos() {
+        for (int i = 0; i < Math.pow(2, depth); i++) {
+            if (tileLon * i + MapServer.ROOT_ULLON > params.get("ullon")) {
+                raster_ul_lon = MapServer.ROOT_ULLON + (i - 1) * tileLon;
+                break;
+            }
+        }
+
+        for (int i = 0; i < Math.pow(2, depth); i++) {
+            if (tileLon * i + MapServer.ROOT_ULLON > params.get("lrlon")) {
+                raster_lr_lon = MapServer.ROOT_ULLON + i * tileLon;
+                break;
+            }
+        }
+
+        for (int i = 0; i < Math.pow(2, depth); i++) {
+            if (MapServer.ROOT_ULLAT - tileLat * i < params.get("ullat")) {
+                raster_ul_lat = MapServer.ROOT_ULLAT - (i - 1) * tileLat;
+                break;
+            }
+        }
+
+        for (int i = 0; i < Math.pow(2, depth); i++) {
+            if (MapServer.ROOT_ULLAT - tileLat * i < params.get("lrlat")) {
+                raster_lr_lat = MapServer.ROOT_ULLAT - i * tileLat;
+                break;
+            }
+        }
     }
 
     /**
      * Set the whole render grid to be returned.
      */
     private void setRenderGrid() {
-        int xx = (int) ((raster_lr_lon - raster_ul_lon) / tileLength);
-        int yy = (int) ((raster_lr_lat - raster_ul_lat) / tileLength);
-        int lonS = (int) ((raster_ul_lon - MapServer.ROOT_ULLON) / tileLength);
-        int lonE = (int) ((raster_lr_lon - MapServer.ROOT_ULLON) / tileLength);
-        int latS = (int) ((raster_ul_lat - MapServer.ROOT_ULLAT) / tileLength);
-        int latE = (int) ((raster_lr_lat - MapServer.ROOT_ULLAT) / tileLength);
+        int xx = (int) Math.round((raster_lr_lon - raster_ul_lon) / tileLon);
+        int yy = (int) Math.round((raster_ul_lat - raster_lr_lat) / tileLat);
+        int lonS = (int) Math.round((raster_ul_lon - MapServer.ROOT_ULLON) / tileLon);
+        int latS = (int) Math.round((MapServer.ROOT_ULLAT - raster_ul_lat) / tileLat);
 
-        render_grid = new String[xx][yy];
+        render_grid = new String[yy][xx];
 
         String depthStr = "d" + depth + "_";
-        for (int i = lonS; i <= lonE; i++) {
-            String xxStr = "x" + i + "_";
-            for (int j = latS; j <= latE; j++) {
-                String yyStr = "y" + j;
-                render_grid[i][j] = depthStr + xxStr + yyStr;
+        for (int i = 0; i < yy; i++) {
+            String yyStr = "y" + (latS + i);
+
+            for (int j = 0; j < xx; j++) {
+                String xxStr = "x" + (lonS + j) + "_";
+                render_grid[i][j] = depthStr + xxStr + yyStr + ".png";
             }
         }
     }
