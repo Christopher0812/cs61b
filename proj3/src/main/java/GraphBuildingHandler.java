@@ -2,10 +2,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Parses OSM XML files using an XML SAX parser. Used to construct the graph of roads for
@@ -93,22 +90,22 @@ public class GraphBuildingHandler extends DefaultHandler {
             makes this way invalid. Instead, think of keeping a list of possible connections and
             remember whether this way is valid or not. */
             String vID = attributes.getValue("ref");
-            lastEdge.vIDs.add(vID);
+            lastEdge.vIDs.add(Long.parseLong(vID));
 
         } else if (activeState.equals("way") && qName.equals("tag")) {
             /* While looking at a way, we found a <tag...> tag. */
             String k = attributes.getValue("k");
             String v = attributes.getValue("v");
             if (k.equals("maxspeed")) {
-                lastEdge.maxSpeed = v;
+                lastEdge.extraInfo.put("maxspeed", v);
+
+            } else if (k.equals("name")) {
+                lastEdge.extraInfo.put("name", v);
 
             } else if (k.equals("highway")) {
                 if (ALLOWED_HIGHWAY_TYPES.contains(v)) {
                     lastEdge.isValid = true;
                 }
-
-            } else if (k.equals("name")) {
-                lastEdge.name = v;
             }
 
         } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
@@ -139,9 +136,12 @@ public class GraphBuildingHandler extends DefaultHandler {
             /* We are done looking at a way. (We finished looking at the vertices, speeds, etc...)*/
             /* Hint1: If you have stored the possible connections for this way, here's your
             chance to actually connect the vertices together if the way is valid. */
-
             if (lastEdge.isValid) {
-                g.addEdge(lastEdge);
+                for (int i = 1; i < lastEdge.vIDs.size(); i++) {
+                    Long id1 = lastEdge.vIDs.get(i - 1);
+                    Long id2 = lastEdge.vIDs.get(i);
+                    g.addAdjacency(id1, id2);
+                }
             }
         }
     }

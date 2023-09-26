@@ -6,10 +6,7 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -26,27 +23,42 @@ public class GraphDB {
      * creating helper classes, e.g. Vertex, Edge, etc.
      */
     private final Map<Long, Vertex> vertices = new LinkedHashMap<>();
-    private final Map<Long, Edge> edges = new LinkedHashMap<>();
-
+    private final ArrayList<Edge> edges = new ArrayList<>();
 
     void addVertex(Vertex vertex) {
-        this.vertices.put(Long.parseLong(vertex.id), vertex);
+        this.vertices.put(vertex.id, vertex);
     }
 
-    void addEdge(Edge edge) {
-        this.edges.put(Long.parseLong(edge.id), edge);
+    Vertex getVertex(Long id) {
+        return vertices.get(id);
+    }
+
+    void addAdjacency(Long id1, Long id2) {
+        if (id1 == id2) {
+            return;
+        }
+
+        Vertex v1 = vertices.get(id1);
+        Vertex v2 = vertices.get(id2);
+
+        if (!v1.neighbors.contains(id2)) {
+            v1.neighbors.add(id2);
+        }
+
+        if (!v2.neighbors.contains(id1)) {
+            v2.neighbors.add(id1);
+        }
     }
 
     static class Vertex {
-        String id;
-        boolean isConnected = false;
+        Long id;
         double lat;
         double lon;
         String name;
         ArrayList<Long> neighbors;
 
         Vertex(String id, String lat, String lon) {
-            this.id = id;
+            this.id = Long.parseLong(id);
             this.lat = Double.parseDouble(lat);
             this.lon = Double.parseDouble(lon);
             this.neighbors = new ArrayList<>();
@@ -55,16 +67,16 @@ public class GraphDB {
 
     static class Edge {
         String id;
-        ArrayList<String> vIDs;
+        boolean isValid;
+        ArrayList<Long> vIDs;
 
         /* Extra information needed. */
-        String name;
-        String maxSpeed;
-        boolean isValid;
+        Map<String, String> extraInfo;
 
         Edge(String id) {
             this.id = id;
             this.vIDs = new ArrayList<>();
+            this.extraInfo = new HashMap<>();
         }
     }
 
@@ -106,7 +118,13 @@ public class GraphDB {
      * we can reasonably assume this since typically roads are connected.
      */
     private void clean() {
-        // TODO: Your code here.
+        ArrayList<Long> vLst = (ArrayList<Long>) vertices();
+        for (Long id : vLst) {
+            Vertex v = vertices.get(id);
+            if (v.neighbors.isEmpty()) {
+                vertices.remove(id);
+            }
+        }
     }
 
     /**
@@ -189,7 +207,18 @@ public class GraphDB {
      * @return The id of the node in the graph closest to the target.
      */
     long closest(double lon, double lat) {
-        return 0;
+        ArrayList<Long> arrayList = (ArrayList<Long>) vertices();
+        double closestDist = Double.MAX_VALUE;
+        long best = 0;
+
+        for (Long id : arrayList) {
+            double tempDist = distance(lon(id), lat(id), lon, lat);
+            if (tempDist < closestDist) {
+                closestDist = tempDist;
+                best = id;
+            }
+        }
+        return best;
     }
 
     /**
@@ -199,7 +228,7 @@ public class GraphDB {
      * @return The longitude of the vertex.
      */
     double lon(long v) {
-        return 0;
+        return vertices.get(v).lon;
     }
 
     /**
@@ -209,6 +238,6 @@ public class GraphDB {
      * @return The latitude of the vertex.
      */
     double lat(long v) {
-        return 0;
+        return vertices.get(v).lat;
     }
 }
