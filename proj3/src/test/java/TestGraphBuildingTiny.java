@@ -32,15 +32,15 @@ public class TestGraphBuildingTiny {
         initialized = true;
     }
 
-    /** All nodes in the tiny-clean file are valid, so the clean method
-     *  should not remove any vertices for this graph, i.e. all 7 nodes
+    /** All vertices in the tiny-clean file are valid, so the clean method
+     *  should not remove any vertices for this graph, i.e. all 7 vertices
      *  should survive the cleaning process.
      */
     @Test
     public void testNodeCountTinyGraph() {
         Iterable<Long> ids = graphTiny.vertices();
         int numberOfNodes = TestGraphBuilding.countIterableItems(ids);
-        assertEquals("Your graph should have 7 nodes.", 7, numberOfNodes);
+        assertEquals("Your graph should have 7 vertices.", 7, numberOfNodes);
     }
 
     @Test

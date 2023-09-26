@@ -38,7 +38,7 @@ public class TestGraphBuilding {
     /**
      * Here are a couple things to consider if you don't have the right number:
      *
-     * 1. Be sure to only add ways that are valid. (Especially if you have 374535 nodes after clean)
+     * 1. Be sure to only add ways that are valid. (Especially if you have 374535 vertices after clean)
      * 2. Depending on the graph implementation, edges may be directed or undirected. Remember that
      * all roads are two-way for this project and to add both edges if you're using directed edges.
      */
@@ -46,8 +46,8 @@ public class TestGraphBuilding {
     public void testNodeCountFullGraph() {
         Iterable<Long> ids = graph.vertices();
         int numberOfNodes = countIterableItems(ids);
-        assertEquals("Your graph should have 25176 nodes after cleaning. Consider removing the call"
-                + " to clean and seeing if you get 399287 nodes as expected as a sanity check on"
+        assertEquals("Your graph should have 25176 vertices after cleaning. Consider removing the call"
+                + " to clean and seeing if you get 399287 vertices as expected as a sanity check on"
                 + "  your results before calling clean.", 25176, numberOfNodes);
     }
 
@@ -58,8 +58,8 @@ public class TestGraphBuilding {
     public void testNodeCountSmall() {
         Iterable<Long> ids = graphSmall.vertices();
         int numberOfNodes = countIterableItems(ids);
-        assertEquals("Your graph should have 21 nodes after cleaning. Consider removing the call"
-                + " to clean and seeing if you get 250 nodes as expected as a sanity check on"
+        assertEquals("Your graph should have 21 vertices after cleaning. Consider removing the call"
+                + " to clean and seeing if you get 250 vertices as expected as a sanity check on"
                 + "  your results before calling clean.", 21, numberOfNodes);
     }
 
