@@ -22,17 +22,27 @@ public class GraphDB {
      * Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Vertex, Edge, etc.
      */
-    private final Map<Long, Vertex> vertices = new LinkedHashMap<>();
+    private final Map<Long, Vertex> vertices = new HashMap<>();
+    private final Map<Long, String> streets = new HashMap<>();
 
     void addVertex(Vertex vertex) {
         this.vertices.put(vertex.id, vertex);
     }
 
-    Vertex getVertex(Long id) {
+    Vertex getVertex(long id) {
         return vertices.get(id);
     }
 
-    void addAdjacency(Long id1, Long id2) {
+    void addStreet(long id, String name) {
+        if (name == null) name = "null";
+        streets.put(id, name);
+    }
+
+    String getStreetName(long id) {
+        return this.streets.get(id);
+    }
+
+    void addAdjacency(Long id1, Long id2, String name, long streetID) {
         if (id1 == id2) {
             return;
         }
@@ -47,25 +57,34 @@ public class GraphDB {
         if (!v2.neighbors.contains(id1)) {
             v2.neighbors.add(id1);
         }
+
+        /* Add the street name of the node. */
+        v2.streetIds.add(streetID);
+        v1.streetIds.add(streetID);
     }
 
     static class Vertex {
         Long id;
         double lat;
         double lon;
-        String name;
         ArrayList<Long> neighbors;
+        ArrayList<Long> streetIds;
+
+        /* Extra information needed. */
+        Map<String, String> extraInfo;
 
         Vertex(String id, String lat, String lon) {
             this.id = Long.parseLong(id);
             this.lat = Double.parseDouble(lat);
             this.lon = Double.parseDouble(lon);
             this.neighbors = new ArrayList<>();
+            this.streetIds = new ArrayList<>();
+            extraInfo = new HashMap<>();
         }
     }
 
     static class Edge {
-        String id;
+        long id;
         boolean isValid;
         ArrayList<Long> vIDs;
 
@@ -73,7 +92,7 @@ public class GraphDB {
         Map<String, String> extraInfo;
 
         Edge(String id) {
-            this.id = id;
+            this.id = Long.parseLong(id);
             this.vIDs = new ArrayList<>();
             this.extraInfo = new HashMap<>();
         }

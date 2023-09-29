@@ -96,16 +96,12 @@ public class GraphBuildingHandler extends DefaultHandler {
             /* While looking at a way, we found a <tag...> tag. */
             String k = attributes.getValue("k");
             String v = attributes.getValue("v");
-            if (k.equals("maxspeed")) {
-                lastEdge.extraInfo.put("maxspeed", v);
-
-            } else if (k.equals("name")) {
-                lastEdge.extraInfo.put("name", v);
-
-            } else if (k.equals("highway")) {
+            if (k.equals("highway")) {
                 if (ALLOWED_HIGHWAY_TYPES.contains(v)) {
                     lastEdge.isValid = true;
                 }
+            } else {
+                lastEdge.extraInfo.put(k, v);
             }
 
         } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
@@ -114,7 +110,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             /* Hint: Since we found this <tag...> INSIDE a node, we should probably remember which
             node this tag belongs to. Remember XML is parsed top-to-bottom, so probably it's the
             last node that you looked at (check the first if-case). */
-            lastVertex.name = attributes.getValue("name");
+            lastVertex.extraInfo.put("name", attributes.getValue("name"));
         }
     }
 
@@ -137,10 +133,11 @@ public class GraphBuildingHandler extends DefaultHandler {
             /* Hint1: If you have stored the possible connections for this way, here's your
             chance to actually connect the vertices together if the way is valid. */
             if (lastEdge.isValid) {
+                g.addStreet(lastEdge.id, lastEdge.extraInfo.get("name"));
                 for (int i = 1; i < lastEdge.vIDs.size(); i++) {
                     Long id1 = lastEdge.vIDs.get(i - 1);
                     Long id2 = lastEdge.vIDs.get(i);
-                    g.addAdjacency(id1, id2);
+                    g.addAdjacency(id1, id2, lastEdge.extraInfo.get("name"), lastEdge.id);
                 }
             }
         }

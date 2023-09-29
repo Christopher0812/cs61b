@@ -21,6 +21,8 @@ public class Router {
 
     private static MinPQ<SearchNode> fringe;
 
+    private static List<Long> route;
+
     private static class SearchNode implements Comparable<SearchNode> {
         final long id;
         private final double distSoFar;
@@ -81,10 +83,15 @@ public class Router {
                 relax(nodeRemoved.id, id, T);
             }
         }
-        return getLst(S, T);
+
+        getLst(S, T);
+
+        return route;
     }
 
-    /** Relax the adjacent node.*/
+    /**
+     * Relax the adjacent node.
+     */
     private static void relax(long from, long to, long T) {
         double distSoFar = distTo.get(from);
         double distToAdd = graph.distance(from, to);
@@ -96,31 +103,116 @@ public class Router {
         }
     }
 
-    /** get the ArrayList that contains the shortest path. */
-    private static List<Long> getLst(long S, long T) {
-        List<Long> lst = new ArrayList<>();
+    /**
+     * get the ArrayList that contains the shortest path.
+     */
+    private static void getLst(long S, long T) {
+        route = new ArrayList<>();
 
         long temp = T;
         while (temp != S) {
-            lst.add(0, temp);
+            route.add(0, temp);
             temp = edgeTo.get(temp);
         }
-        lst.add(0, S);
-
-        return lst;
+        route.add(0, S);
     }
 
     /**
      * Create the list of directions corresponding to a route on the graph.
      *
-     * @param g     The graph to use.
      * @param route The route to translate into directions. Each element
      *              corresponds to a node from the graph in the route.
      * @return A list of NavigatiionDirection objects corresponding to the input
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+        Router.graph = g;
+
+        List<NavigationDirection> lst = new ArrayList<>();
+        Iterator<Long> iter = route.iterator();
+
+        /* Instance variables */
+        NavigationDirection ND;
+        long tempNode;
+        long lastNode;
+        double tempAngle = -1;
+        double lastAngle = -1;
+
+        /* Initialize the start. */
+        ND = new NavigationDirection();
+        lastNode = iter.next();
+        ND.direction = NavigationDirection.START;
+        lst.add(ND);
+
+        /* ---------------------------------*/
+        /* Iterate through the whole route. */
+        while (iter.hasNext()) {
+            tempNode = iter.next();
+
+            /* If still on the same street, just add up the new distance. */
+            if (isSameStreet(tempNode, lastNode)) {
+                /* Set name as the shared name of both nodes. */
+                if (sharedStreetName(tempNode, lastNode).equals("null")) {
+                    ND.way = NavigationDirection.UNKNOWN_ROAD;
+                } else {
+                    ND.way = sharedStreetName(tempNode, lastNode);
+                }
+                /* Add distance. */
+                ND.distance += graph.distance(tempNode, lastNode);
+
+            } else {
+                /* If not on the same street, add a new {NavigationDirection}. */
+                ND = new NavigationDirection();
+                lst.add(ND);
+
+                /* Set direction. */
+                tempAngle = graph.bearing(tempNode, lastNode);
+                if (lastAngle != -1) {
+                    setDirection(ND, tempAngle - lastAngle);
+                }
+                /* Set distance. */
+                ND.distance = graph.distance(tempNode, lastNode);
+            }
+
+            /* Reset last variables. */
+            lastNode = tempNode;
+            lastAngle = tempAngle;
+        }
+
+        return lst;
+    }
+
+    private static String sharedStreetName(long nodeId1, long nodeId2) {
+        for (long lastStreetId : graph.getVertex(nodeId2).streetIds) {
+            for (long tempStreetId : graph.getVertex(nodeId1).streetIds) {
+                if (graph.getStreetName(tempStreetId).equals(graph.getStreetName(lastStreetId)))
+                    return graph.getStreetName(tempStreetId);
+            }
+        }
+        return null;
+    }
+
+    private static boolean isSameStreet(long nodeId1, long nodeId2) {
+        String sharedName = sharedStreetName(nodeId1, nodeId2);
+        return sharedName != null && !sharedName.equals("null");
+    }
+
+    private static void setDirection(NavigationDirection ND, double angle) {
+        if (angle < -100) {
+            ND.direction = NavigationDirection.SHARP_LEFT;
+        } else if (angle < -30) {
+            ND.direction = NavigationDirection.LEFT;
+        } else if (angle < -15) {
+            ND.direction = NavigationDirection.SLIGHT_LEFT;
+        } else if (angle < 15) {
+            ND.direction = NavigationDirection.STRAIGHT;
+        } else if (angle < 30) {
+            ND.direction = NavigationDirection.SLIGHT_RIGHT;
+        } else if (angle < 100) {
+            ND.direction = NavigationDirection.RIGHT;
+        } else {
+            ND.direction = NavigationDirection.SHARP_RIGHT;
+        }
     }
 
 
