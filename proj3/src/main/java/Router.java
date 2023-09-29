@@ -128,76 +128,126 @@ public class Router {
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
         Router.graph = g;
 
-        List<NavigationDirection> lst = new ArrayList<>();
+        List<RoadPiece> pieceList = new ArrayList<>();
         Iterator<Long> iter = route.iterator();
 
         /* Instance variables */
-        NavigationDirection ND;
-        long tempNode;
-        long lastNode;
-        double tempAngle = -1;
-        double lastAngle = -1;
+        long nodeAhead;
+        long nodeBehind;
+        RoadPiece pieceAhead;
+        RoadPiece pieceBehind;
 
         /* Initialize the start. */
-        ND = new NavigationDirection();
-        lastNode = iter.next();
+        nodeBehind = iter.next();
+        nodeAhead = iter.next();
+        pieceAhead = new RoadPiece(nodeAhead, nodeBehind);
+        pieceList.add(pieceAhead);
+
+        /* Iterate through the whole route. */
+        while (iter.hasNext()) {
+            /* Get the next road piece. */
+            nodeBehind = nodeAhead;
+            nodeAhead = iter.next();
+            pieceBehind = pieceAhead;
+            pieceAhead = new RoadPiece(nodeAhead, nodeBehind);
+
+            /* If on the same road, merge the two. Else, store the new piece. */
+            if (pieceAhead.equals(pieceBehind)) {
+                pieceAhead = pieceAhead.mergeInto(pieceBehind);
+            } else {
+                pieceList.add(pieceAhead);
+            }
+        }
+        /* Translate the road piece list into route direction list. */
+        return translatePieceList(pieceList);
+    }
+
+    private static List<NavigationDirection> translatePieceList(List<RoadPiece> pieceList) {
+        List<NavigationDirection> lst = new ArrayList<>();
+        Iterator<RoadPiece> iter = pieceList.iterator();
+        RoadPiece lastPiece;
+
+        /* Initialization */
+        NavigationDirection ND = new NavigationDirection();
+        RoadPiece piece = iter.next();
+        ND.way = piece.name;
+        ND.distance = piece.distance;
         ND.direction = NavigationDirection.START;
         lst.add(ND);
 
-        /* ---------------------------------*/
-        /* Iterate through the whole route. */
+        /* Iterate through the whole list. */
         while (iter.hasNext()) {
-            tempNode = iter.next();
+            lastPiece = piece;
+            piece = iter.next();
 
-            /* If still on the same street, just add up the new distance. */
-            if (isSameStreet(tempNode, lastNode)) {
-                /* Set name as the shared name of both nodes. */
-                if (sharedStreetName(tempNode, lastNode).equals("null")) {
-                    ND.way = NavigationDirection.UNKNOWN_ROAD;
-                } else {
-                    ND.way = sharedStreetName(tempNode, lastNode);
-                }
-                /* Add distance. */
-                ND.distance += graph.distance(tempNode, lastNode);
-
+            ND = new NavigationDirection();
+            if (!piece.name.equals(NavigationDirection.UNKNOWN_ROAD)) {
+                ND.way = piece.name;
             } else {
-                /* If not on the same street, add a new {NavigationDirection}. */
-                ND = new NavigationDirection();
-                lst.add(ND);
-
-                /* Set direction. */
-                tempAngle = graph.bearing(tempNode, lastNode);
-                if (lastAngle != -1) {
-                    setDirection(ND, tempAngle - lastAngle);
-                }
-                /* Set distance. */
-                ND.distance = graph.distance(tempNode, lastNode);
+                ND.way = "";
             }
+            ND.distance = piece.distance;
+            setDirection(ND, piece.bearing1, lastPiece.bearing2);
 
-            /* Reset last variables. */
-            lastNode = tempNode;
-            lastAngle = tempAngle;
+            lst.add(ND);
         }
 
         return lst;
     }
 
-    private static String sharedStreetName(long nodeId1, long nodeId2) {
-        for (long lastStreetId : graph.getVertex(nodeId2).streetIds) {
-            for (long tempStreetId : graph.getVertex(nodeId1).streetIds) {
-                if (graph.getStreetName(tempStreetId).equals(graph.getStreetName(lastStreetId)))
-                    return graph.getStreetName(tempStreetId);
-            }
+    private static class RoadPiece {
+        private String name;
+        private double distance;
+        private double bearing1;
+        private double bearing2;
+
+        RoadPiece(long nodeAhead, long nodeBehind) {
+            this.name = sharedStreet(nodeAhead, nodeBehind);
+            this.distance = graph.distance(nodeAhead, nodeBehind);
+            this.bearing1 = graph.bearing(nodeAhead, nodeBehind);
+            this.bearing2 = graph.bearing(nodeAhead, nodeBehind);
         }
-        return null;
+
+        private String sharedStreet(long node1, long node2) {
+            for (long lastStreetId : graph.getVertex(node2).streetIds) {
+                for (long tempStreetId : graph.getVertex(node1).streetIds) {
+                    if (tempStreetId == lastStreetId) {
+                        if (graph.getStreetName(tempStreetId).equals("null"))
+                            return NavigationDirection.UNKNOWN_ROAD;
+                        else
+                            return graph.getStreetName(tempStreetId);
+                    }
+                }
+            }
+            return null;
+        }
+
+        public RoadPiece mergeInto(RoadPiece piece) {
+            piece.distance += distance;
+            piece.bearing2 = bearing1;
+            return piece;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object)
+                return true;
+
+            return (object instanceof RoadPiece)
+                    && (this.name.equals(((RoadPiece) object).name));
+        }
     }
 
-    private static boolean isSameStreet(long nodeId1, long nodeId2) {
-        String sharedName = sharedStreetName(nodeId1, nodeId2);
-        return sharedName != null && !sharedName.equals("null");
-    }
 
-    private static void setDirection(NavigationDirection ND, double angle) {
+    private static void setDirection(NavigationDirection ND, double bearing1, double bearing2) {
+        double angle = bearing1 - bearing2;
+        /* Adjust bearing. */
+        if (angle > 180) {
+            angle -= 360;
+        } else if (angle < -180) {
+            angle += 360;
+        }
+
         if (angle < -100) {
             ND.direction = NavigationDirection.SHARP_LEFT;
         } else if (angle < -30) {
