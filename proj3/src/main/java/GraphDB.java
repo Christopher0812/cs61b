@@ -23,7 +23,6 @@ public class GraphDB {
      * creating helper classes, e.g. Vertex, Edge, etc.
      */
     private final Map<Long, Vertex> vertices = new LinkedHashMap<>();
-    private final ArrayList<Edge> edges = new ArrayList<>();
 
     void addVertex(Vertex vertex) {
         this.vertices.put(vertex.id, vertex);
