@@ -120,6 +120,7 @@ public class Router {
     /**
      * Create the list of directions corresponding to a route on the graph.
      *
+     * @param g
      * @param route The route to translate into directions. Each element
      *              corresponds to a node from the graph in the route.
      * @return A list of NavigatiionDirection objects corresponding to the input
@@ -168,28 +169,28 @@ public class Router {
         RoadPiece lastPiece;
 
         /* Initialization */
-        NavigationDirection ND = new NavigationDirection();
+        NavigationDirection nd = new NavigationDirection();
         RoadPiece piece = iter.next();
-        ND.way = piece.name;
-        ND.distance = piece.distance;
-        ND.direction = NavigationDirection.START;
-        lst.add(ND);
+        nd.way = piece.name;
+        nd.distance = piece.distance;
+        nd.direction = NavigationDirection.START;
+        lst.add(nd);
 
         /* Iterate through the whole list. */
         while (iter.hasNext()) {
             lastPiece = piece;
             piece = iter.next();
 
-            ND = new NavigationDirection();
+            nd = new NavigationDirection();
             if (!piece.name.equals(NavigationDirection.UNKNOWN_ROAD)) {
-                ND.way = piece.name;
+                nd.way = piece.name;
             } else {
-                ND.way = "";
+                nd.way = "";
             }
-            ND.distance = piece.distance;
-            setDirection(ND, piece.bearing1, lastPiece.bearing2);
+            nd.distance = piece.distance;
+            setDirection(nd, piece.bearing1, lastPiece.bearing2);
 
-            lst.add(ND);
+            lst.add(nd);
         }
 
         return lst;
@@ -212,10 +213,11 @@ public class Router {
             for (long lastStreetId : graph.getVertex(node2).streetIds) {
                 for (long tempStreetId : graph.getVertex(node1).streetIds) {
                     if (tempStreetId == lastStreetId) {
-                        if (graph.getStreetName(tempStreetId).equals("null"))
+                        if (graph.getStreetName(tempStreetId).equals("null")) {
                             return NavigationDirection.UNKNOWN_ROAD;
-                        else
+                        } else  {
                             return graph.getStreetName(tempStreetId);
+                        }
                     }
                 }
             }
@@ -230,8 +232,9 @@ public class Router {
 
         @Override
         public boolean equals(Object object) {
-            if (this == object)
+            if (this == object) {
                 return true;
+            }
 
             return (object instanceof RoadPiece)
                     && (this.name.equals(((RoadPiece) object).name));
@@ -239,7 +242,7 @@ public class Router {
     }
 
 
-    private static void setDirection(NavigationDirection ND, double bearing1, double bearing2) {
+    private static void setDirection(NavigationDirection nd, double bearing1, double bearing2) {
         double angle = bearing1 - bearing2;
         /* Adjust bearing. */
         if (angle > 180) {
@@ -249,19 +252,19 @@ public class Router {
         }
 
         if (angle < -100) {
-            ND.direction = NavigationDirection.SHARP_LEFT;
+            nd.direction = NavigationDirection.SHARP_LEFT;
         } else if (angle < -30) {
-            ND.direction = NavigationDirection.LEFT;
+            nd.direction = NavigationDirection.LEFT;
         } else if (angle < -15) {
-            ND.direction = NavigationDirection.SLIGHT_LEFT;
+            nd.direction = NavigationDirection.SLIGHT_LEFT;
         } else if (angle < 15) {
-            ND.direction = NavigationDirection.STRAIGHT;
+            nd.direction = NavigationDirection.STRAIGHT;
         } else if (angle < 30) {
-            ND.direction = NavigationDirection.SLIGHT_RIGHT;
+            nd.direction = NavigationDirection.SLIGHT_RIGHT;
         } else if (angle < 100) {
-            ND.direction = NavigationDirection.RIGHT;
+            nd.direction = NavigationDirection.RIGHT;
         } else {
-            ND.direction = NavigationDirection.SHARP_RIGHT;
+            nd.direction = NavigationDirection.SHARP_RIGHT;
         }
     }
 

@@ -30,10 +30,10 @@ public class GraphBuildingHandler extends DefaultHandler {
      * roads, but in practice we walk all over them with such impunity that we forget cars can
      * actually drive on them.
      */
-    private static final Set<String> ALLOWED_HIGHWAY_TYPES = new HashSet<>(Arrays.asList
-            ("motorway", "trunk", "primary", "secondary", "tertiary", "unclassified",
-                    "residential", "living_street", "motorway_link", "trunk_link", "primary_link",
-                    "secondary_link", "tertiary_link"));
+    private static final Set<String> ALLOWED_HIGHWAY_TYPES = new HashSet<>(Arrays.asList("motorway",
+            "trunk", "primary", "secondary", "tertiary", "unclassified",
+            "residential", "living_street", "motorway_link", "trunk_link", "primary_link",
+            "secondary_link", "tertiary_link"));
     private String activeState = "";
     private GraphDB.Vertex lastVertex;
     private GraphDB.Edge lastEdge;
@@ -104,8 +104,8 @@ public class GraphBuildingHandler extends DefaultHandler {
                 lastEdge.extraInfo.put(k, v);
             }
 
-        } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
-                .equals("name")) {
+        } else if (activeState.equals("node") && qName.equals("tag")
+                && attributes.getValue("k").equals("name")) {
             /* While looking at a node, we found a <tag...> with k="name". */
             /* Hint: Since we found this <tag...> INSIDE a node, we should probably remember which
             node this tag belongs to. Remember XML is parsed top-to-bottom, so probably it's the

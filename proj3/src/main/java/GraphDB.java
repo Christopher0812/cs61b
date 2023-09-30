@@ -34,7 +34,9 @@ public class GraphDB {
     }
 
     void addStreet(long id, String name) {
-        if (name == null) name = "null";
+        if (name == null) {
+            name = "null";
+        }
         streets.put(id, name);
     }
 
