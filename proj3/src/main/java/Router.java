@@ -120,7 +120,6 @@ public class Router {
     /**
      * Create the list of directions corresponding to a route on the graph.
      *
-     * @param g
      * @param route The route to translate into directions. Each element
      *              corresponds to a node from the graph in the route.
      * @return A list of NavigatiionDirection objects corresponding to the input

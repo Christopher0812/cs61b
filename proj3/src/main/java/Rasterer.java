@@ -82,7 +82,7 @@ public class Rasterer {
         if (querySuccess) {
             setLonDPP();
             setDepth();
-            setLonPos();
+            setRasterPos();
             setRenderGrid();
         }
     }
@@ -144,7 +144,7 @@ public class Rasterer {
      * 3. upper left latitude
      * 4. lower right latitudes
      */
-    private void setLonPos() {
+    private void setRasterPos() {
         /* Set {raster_UlLon}*/
         for (int i = 0; i < Math.pow(2, depth); i++) {
             if (tileLon * i + MapServer.ROOT_ULLON > params.get("ullon")) {
