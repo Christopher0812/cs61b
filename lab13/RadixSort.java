@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**
  * Class for doing Radix sort
  *
@@ -16,8 +18,25 @@ public class RadixSort {
      * @return String[] the sorted array
      */
     public static String[] sort(String[] asciis) {
-        // TODO: Implement LSD Sort
-        return null;
+        String[] asciisCopy = asciis.clone();
+
+        int max = Integer.MIN_VALUE;
+        for (String str : asciis) {
+            max = max > str.length() ? max : str.length();
+        }
+
+        for (int i = 0; i < max; i++) {
+            sortHelperLSD(asciisCopy, i);
+        }
+
+        return asciisCopy;
+    }
+
+    private static char getCharAt(String str, int index) {
+        if (str == null || str.length() <= index) {
+            return 0;
+        }
+        return str.charAt(index);
     }
 
     /**
@@ -27,8 +46,28 @@ public class RadixSort {
      * @param index The position to sort the Strings on.
      */
     private static void sortHelperLSD(String[] asciis, int index) {
-        // Optional LSD helper method for required LSD radix sort
-        return;
+        // gather all the counts for each value
+        int[] counts = new int[256];
+        for (String i : asciis) {
+            counts[getCharAt(i, index)]++;
+        }
+
+        int pos = 0;
+        for (int i = 0; i < counts.length; i += 1) {
+            int temp = counts[i];
+            counts[i] = pos;
+            pos += temp;
+        }
+
+        String[] sorted = new String[asciis.length];
+        for (int i = 0; i < asciis.length; i += 1) {
+            String item = asciis[i];
+            int place = counts[getCharAt(item, index)];
+            sorted[place] = item;
+            counts[getCharAt(item, index)] += 1;
+        }
+
+        System.arraycopy(sorted, 0, asciis, 0, asciis.length);
     }
 
     /**
@@ -44,5 +83,14 @@ public class RadixSort {
     private static void sortHelperMSD(String[] asciis, int start, int end, int index) {
         // Optional MSD helper method for optional MSD radix sort
         return;
+    }
+
+    public static void main(String[] args) {
+        String[] students = new String[]{"Vanessa", "Alice", "Ab", "Ethan"};
+
+        String[] expected = new String[]{"Ab",  "Alice", "Ethan", "Vanessa"};
+
+        System.out.println(Arrays.toString(expected));
+        System.out.println(Arrays.toString(RadixSort.sort(students)));
     }
 }
