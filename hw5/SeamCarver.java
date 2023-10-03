@@ -1,12 +1,17 @@
 import edu.princeton.cs.algs4.Picture;
 
 import java.awt.*;
+import java.util.Random;
 
 public class SeamCarver {
     private final Picture picture;
+    private final Random random = new Random(12123);
+
+    double[][] energy;
 
     public SeamCarver(Picture picture) {
         this.picture = picture;
+        this.energy = new double[width()][height()];
     }
 
     public Picture picture() {
@@ -28,7 +33,7 @@ public class SeamCarver {
             x += picture.width();
         }
 
-        if (x > picture.width()) {
+        if (x >= picture.width()) {
             x -= picture.width();
         }
 
@@ -36,8 +41,8 @@ public class SeamCarver {
             y += picture.height();
         }
 
-        if (y > picture.height()) {
-            y -= picture.width();
+        if (y >= picture.height()) {
+            y -= picture.height();
         }
 
         return picture.get(x, y);
@@ -82,55 +87,63 @@ public class SeamCarver {
             if (energies[i] < minValue) {
                 minIndex = i;
                 minValue = energies[i];
+            } else if (energies[i] == minValue) {
+                if (random.nextBoolean()) {
+                    minIndex = i;
+                    minValue = energies[i];
+                }
             }
         }
-
         return minIndex;
     }
 
     private int getMinIndex(int i, double[] energies) {
         double[] piece = new double[3];
         if (i == 0) {
-            System.arraycopy(energies, i, piece, 0, 2);
+            System.arraycopy(energies, i, piece, 1, 2);
+            piece[0] = Double.MAX_VALUE;
         } else if (i == energies.length - 1) {
             System.arraycopy(energies, i - 1, piece, 0, 2);
+            piece[2] = Double.MAX_VALUE;
         } else {
-            System.arraycopy(energies, i - 1, piece, 0, 2);
+            System.arraycopy(energies, i - 1, piece, 0, 3);
         }
 
-        return getMinIndex(piece);
+        return getMinIndex(piece) + i - 1;
     }
 
     private int[] findSeamHelper(int width, int height, boolean transposed) {
         int[][] directions = new int[width][height];
+        double[] levelPrevious = new double[width];
         double[] levelEnergy = new double[width];
 
         /* Initialize the energies of the 0 level. */
         for (int i = 0; i < width; i++) {
             if (transposed) {
-                levelEnergy[i] = energy(0, i);
+                levelPrevious[i] = energy(0, i);
             } else {
-                levelEnergy[i] = energy(i, 0);
+                levelPrevious[i] = energy(i, 0);
             }
         }
-        ;
 
         /* Iterate to the end. */
         for (int i = 1; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                int previousIndex = getMinIndex(j, levelEnergy);
-                levelEnergy[j] = energy(j, i) + levelEnergy[previousIndex];
+                int previousIndex = getMinIndex(j, levelPrevious);
+                levelEnergy[j] = energy(j, i) + levelPrevious[previousIndex];
 
                 /* Set directions. */
                 if (previousIndex < j) {
                     directions[j][i] = -1;
-                }
-                if (previousIndex == j) {
+                } else if (previousIndex == j) {
                     directions[j][i] = 0;
                 } else {
                     directions[j][i] = 1;
                 }
             }
+
+            levelPrevious = levelEnergy;
+            levelEnergy = new double[width];
         }
 
         /* Get the seam path. */
@@ -169,17 +182,19 @@ public class SeamCarver {
 
     // remove horizontal seam from picture
     public void removeHorizontalSeam(int[] seam) throws IllegalArgumentException {
-        if (picture.height() - seam.length != 0) {
+        if (picture.width() - seam.length != 0) {
             throw new IllegalArgumentException();
         }
+
         SeamRemover.removeHorizontalSeam(picture, seam);
     }
 
     // remove vertical seam from picture
     public void removeVerticalSeam(int[] seam) {
-        if (picture.width() - seam.length != 0) {
+        if (picture.height() - seam.length != 0) {
             throw new IllegalArgumentException();
         }
+
         SeamRemover.removeVerticalSeam(picture, seam);
     }
 }
