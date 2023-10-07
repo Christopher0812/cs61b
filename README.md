@@ -1,6 +1,6 @@
 # CS 61B: Data Structures, Spring 2018
 
-I’ve done almost all of them, except <font color=blue>project 2</font>, <font color=red>hw 5-7</font>, for they doesn’t seem that important to me. 
+I’ve done almost all of them, except <font color=blue>project 2</font>, <font color=red>hw 5-7</font>, for they don’t seem that important to me. 
 
 Due to my limited spare time, I didn’t complete those <font color=gold>gold points</font>.
 
